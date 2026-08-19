@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>model debug</title>
+    <style>body { margin: 0; background: #445; }</style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from 'three'
+      import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
+      const q = new URLSearchParams(location.search)
+      const v = (k, d) => (q.get(k) ? q.get(k).split(',').map(Number) : d)
+      const camPos = v('cam', [0, 0.6, 3.2])
+      const look = v('look', [0, 0.5, 0])
+
+      const scene = new THREE.Scene()
+      scene.background = new THREE.Color('#3a4152')
+      const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.01, 100)
+      camera.position.set(...camPos)
+      camera.lookAt(...look)
+      const renderer = new THREE.WebGLRenderer({ antialias: true })
+      renderer.setSize(innerWidth, innerHeight)
+      document.body.appendChild(renderer.domElement)
+
+      scene.add(new THREE.HemisphereLight('#ffffff', '#404040', 2.2))
+      const dir = new THREE.DirectionalLight('#ffffff', 2.5)
+      dir.position.set(4, 6, 5)
+      scene.add(dir)
+      scene.add(new THREE.GridHelper(4, 16, '#889', '#667'))
+      scene.add(new THREE.AxesHelper(1))
+
+      const COLORS = { 'focus-0': '#ff3333', 'focus-1': '#ff9900', 'focus-2': '#ffee00', 'focus-3': '#33ff55', 'focus-4': '#33ddff', 'focus-5': '#cc66ff', 'focus-works': '#ffffff' }
+      let man = null
+      new GLTFLoader().load('/models/me.glb', (g) => {
+        scene.add(g.scene)
+        g.scene.updateMatrixWorld(true)
+        g.scene.traverse((o) => {
+          if (o.name === 'man') man = o
+          if (COLORS[o.name]) {
+            const s = new THREE.Mesh(
+              new THREE.SphereGeometry(0.02, 16, 16),
+              new THREE.MeshBasicMaterial({ color: COLORS[o.name], depthTest: false })
+            )
+            o.getWorldPosition(s.position)
+            s.renderOrder = 99
+            scene.add(s)
+          }
+        })
+        renderer.render(scene, camera)
+        document.title = 'ready'
+      })
+
+      // 点击拾取：把点击处的表面坐标+法线换算到 man 本地系，输出成贴纸配置行
+      const panel = document.createElement('pre')
+      panel.style.cssText =
+        'position:fixed;left:8px;top:8px;color:#9f9;background:rgba(0,0,0,.6);padding:8px;font-size:12px;max-width:60vw;white-space:pre-wrap;margin:0'
+      panel.textContent = '点击模型表面 → 生成贴纸坐标（man 本地系）'
+      document.body.appendChild(panel)
+      const ray = new THREE.Raycaster()
+      addEventListener('click', (e) => {
+        if (!man) return
+        const ndc = new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1)
+        ray.setFromCamera(ndc, camera)
+        const hits = ray.intersectObjects(scene.children, true).filter((h) => h.object.isMesh && !h.object.geometry.type.includes('Sphere'))
+        if (!hits.length) return
+        const h = hits[0]
+        const wp = h.point.clone()
+        const wn = h.face.normal.clone().transformDirection(h.object.matrixWorld)
+        const p = man.worldToLocal(wp.clone())
+        const n = man.worldToLocal(wp.clone().add(wn)).sub(man.worldToLocal(wp.clone())).normalize()
+        const f = (x) => +x.toFixed(3)
+        const line = `{ img: 'stickers/xxx.png', p: [${f(p.x)}, ${f(p.y)}, ${f(p.z)}], n: [${f(n.x)}, ${f(n.y)}, ${f(n.z)}], size: 0.06, roll: 0 },`
+        panel.textContent += '\n' + line
+        console.log('STICKER', line)
+        const dot = new THREE.Mesh(new THREE.SphereGeometry(0.008, 12, 12), new THREE.MeshBasicMaterial({ color: '#ff00ff', depthTest: false }))
+        dot.position.copy(wp)
+        dot.renderOrder = 100
+        scene.add(dot)
+        renderer.render(scene, camera)
+      })
+    </script>
+  </body>
+</html>
