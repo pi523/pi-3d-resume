@@ -57,11 +57,22 @@ function parseFrontmatter(raw: string): {
   return { data, body: m[2].trim() }
 }
 
+// md 里约定用 /works/... 根绝对路径引用资源；站点可能部署在子路径（如 GitHub Pages
+// 的 /pi-3d-resume/），加载时统一改写为相对 BASE_URL 的路径（// 开头的协议相对地址不动）
+const BASE = import.meta.env.BASE_URL
+const rebaseBody = (body: string) =>
+  body
+    .replace(/\b(src|poster|href)="\/(?!\/)/g, `$1="${BASE}`)
+    .replace(/\]\(\/(?!\/)/g, `](${BASE}`)
+const rebaseUrl = (u?: string) => (u && u.startsWith('/') && !u.startsWith('//') ? BASE + u.slice(1) : u)
+
 const docs: Record<string, WorkDoc> = {}
 for (const path in files) {
   const slug = path.split('/').pop()!.replace(/\.md$/, '')
   const { data, body } = parseFrontmatter(files[path])
-  docs[slug] = { slug, ...data, body } as WorkDoc
+  const doc = { slug, ...data, body: rebaseBody(body) } as WorkDoc
+  doc.banner = rebaseUrl(doc.banner)
+  docs[slug] = doc
 }
 
 // 语言分版：<slug>.zh.md / <slug>.en.md 按站点语言取用；没有分版时回退 <slug>.md

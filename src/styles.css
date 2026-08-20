@@ -932,13 +932,21 @@ canvas {
   border-right: 1px solid var(--line);
 }
 
-/* 小横图：右侧错落（align-self 右对齐 + 内缩留白），不抢主体 */
+/* 中部主区：清单在左、配图在右，垂直居中占满标题下方剩余高度（消除大片留白） */
+.wk-card-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: clamp(28px, 4vw, 72px);
+}
+
+/* 小横图：主区右侧，与左侧清单平衡 */
 .wk-card-cover {
   position: relative;
   flex: none;
-  align-self: flex-end;
-  width: clamp(160px, 22vw, 240px);
-  margin-right: clamp(12px, 6%, 80px);
+  width: clamp(200px, 26vw, 320px);
+  margin-right: clamp(8px, 3%, 40px);
   aspect-ratio: 3 / 2;
   border-radius: 12px;
   overflow: hidden;
@@ -994,9 +1002,10 @@ canvas {
   color: var(--muted);
 }
 
-/* 卡内清单区：超高时内部不滚动（避免与横移抢滚轮），靠字号/留白容纳 */
+/* 卡内清单区：主区左列占满剩余宽度；超高时内部不滚动（避免与横移抢滚轮） */
 .wk-card-body {
-  flex: none;
+  flex: 1;
+  min-width: 0;
 }
 
 
@@ -1545,6 +1554,18 @@ canvas {
     position: static;
     padding: clamp(16px, 4vh, 40px) clamp(24px, 6vw, 80px) clamp(20px, 5vh, 48px);
     font-size: clamp(28px, 8vw, 36px);
+  }
+
+  /* 主区改上下堆叠：配图在上（column-reverse，DOM 里清单在前）、清单在下 */
+  .wk-card-main {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: clamp(20px, 5vw, 32px);
+  }
+  .wk-card-cover {
+    align-self: center;
+    width: min(320px, 78vw);
+    margin-right: 0;
   }
 
   /* 作品行：窄屏下标题与右侧数据(播放量/榜单)改为上下排，标题在上、数据在下 */

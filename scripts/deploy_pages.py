@@ -7,7 +7,7 @@ API = "https://api.github.com"
 TOKEN = subprocess.check_output([os.path.expanduser("~/.local/gh/bin/gh"), "auth", "token"]).decode().strip()
 DIST = "/Users/sbsai/Desktop/im/pi-3d-resume/web/dist"
 
-def req(method, path, body=None, retries=5):
+def req(method, path, body=None, retries=10):
     for attempt in range(retries):
         try:
             r = urllib.request.Request(API + path, method=method,
@@ -19,8 +19,28 @@ def req(method, path, body=None, retries=5):
                 return json.load(resp)
         except Exception as e:
             print(f"  {method} {path}: attempt {attempt+1} failed: {e}", flush=True)
-            time.sleep(3)
+            time.sleep(min(2 ** attempt, 30))
     sys.exit(f"giving up on {method} {path}")
+
+def upload_blob(payload: dict, retries=10):
+    """大请求体经本地网络容易断流；gh CLI 的传输更稳，写临时文件走 --input。"""
+    import tempfile
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+        json.dump(payload, f)
+        tmp = f.name
+    try:
+        for attempt in range(retries):
+            p = subprocess.run(
+                [os.path.expanduser("~/.local/gh/bin/gh"), "api",
+                 f"repos/{REPO}/git/blobs", "--input", tmp, "--jq", ".sha"],
+                capture_output=True, text=True)
+            if p.returncode == 0:
+                return p.stdout.strip()
+            print(f"  blob upload attempt {attempt+1} failed: {p.stderr.strip()[:120]}", flush=True)
+            time.sleep(min(2 ** attempt, 30))
+        sys.exit("giving up on blob upload")
+    finally:
+        os.unlink(tmp)
 
 def git_blob_sha(data: bytes) -> str:
     return hashlib.sha1(b"blob %d\x00" % len(data) + data).hexdigest()
@@ -45,9 +65,8 @@ for root, _, files in os.walk(DIST):
             reused += 1
         else:
             print(f"uploading {rel} ({len(data)//1024} KB)", flush=True)
-            resp = req("POST", f"/repos/{REPO}/git/blobs",
-                       {"content": base64.b64encode(data).decode(), "encoding": "base64"})
-            assert resp["sha"] == sha, f"sha mismatch for {rel}"
+            got = upload_blob({"content": base64.b64encode(data).decode(), "encoding": "base64"})
+            assert got == sha, f"sha mismatch for {rel}"
             uploaded += 1
         tree.append({"path": rel, "mode": "100644", "type": "blob", "sha": sha})
 print(f"reused {reused}, uploaded {uploaded}", flush=True)
