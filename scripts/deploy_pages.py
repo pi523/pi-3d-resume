@@ -45,12 +45,22 @@ def upload_blob(payload: dict, retries=10):
 def git_blob_sha(data: bytes) -> str:
     return hashlib.sha1(b"blob %d\x00" % len(data) + data).hexdigest()
 
-# Map of existing blobs on main: path under public/ -> sha
-main_ref = req("GET", f"/repos/{REPO}/git/ref/heads/main")
-main_commit = req("GET", f"/repos/{REPO}/git/commits/{main_ref['object']['sha']}")
-main_tree = req("GET", f"/repos/{REPO}/git/trees/{main_commit['tree']['sha']}?recursive=1")
-existing = {t["path"]: t["sha"] for t in main_tree["tree"] if t["type"] == "blob"}
-print(f"main has {len(existing)} blobs", flush=True)
+# Blobs already on the remote, reusable without upload:
+#   main 的 public/<path>（资源原件） + 上一版 gh-pages 的 <path>（没变的构建产物）
+def branch_blobs(branch):
+    try:
+        ref = req("GET", f"/repos/{REPO}/git/ref/heads/{branch}")
+        commit = req("GET", f"/repos/{REPO}/git/commits/{ref['object']['sha']}")
+        tree = req("GET", f"/repos/{REPO}/git/trees/{commit['tree']['sha']}?recursive=1")
+        return {t["path"]: t["sha"] for t in tree["tree"] if t["type"] == "blob"}
+    except SystemExit:
+        raise
+    except Exception:
+        return {}
+
+existing = branch_blobs("main")  # 路径本就是 public/...
+existing.update(branch_blobs("gh-pages"))
+print(f"{len(existing)} reusable blobs on remote", flush=True)
 
 tree = []
 uploaded = reused = 0
