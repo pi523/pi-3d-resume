@@ -31,7 +31,7 @@ function WorkLine({ item, onOpen }: { item: WorkListItem; onOpen: (item: WorkLis
   )
 }
 
-// 一张全高板块卡：顶部编号 + 标题，中部左清单右配图（垂直居中填满剩余高度）
+// 一张全高板块卡：顶部编号 + 标题，中部右侧大配图，底部作品清单
 function SectionCard({
   section,
   data,
@@ -50,18 +50,16 @@ function SectionCard({
         <h3 className="wk-card-title">{section.title}</h3>
         <span className="wk-card-tagline">{section.tagline}</span>
       </div>
-      <div className="wk-card-main">
-        <SectionWorks section={section} data={data} onOpen={onOpen} />
-        <div className="wk-card-cover">
-          {cover && !coverError ? (
-            <img src={cover} alt="" onError={() => setCoverError(true)} />
-          ) : (
-            <div className="wk-card-cover-ph" aria-hidden="true">
-              <span className="wk-card-cover-no">{section.no}</span>
-            </div>
-          )}
-        </div>
+      <div className="wk-card-cover">
+        {cover && !coverError ? (
+          <img src={cover} alt="" onError={() => setCoverError(true)} />
+        ) : (
+          <div className="wk-card-cover-ph" aria-hidden="true">
+            <span className="wk-card-cover-no">{section.no}</span>
+          </div>
+        )}
       </div>
+      <SectionWorks section={section} data={data} onOpen={onOpen} />
     </div>
   )
 }

@@ -932,21 +932,13 @@ canvas {
   border-right: 1px solid var(--line);
 }
 
-/* 中部主区：清单在左、配图在右，垂直居中占满标题下方剩余高度（消除大片留白） */
-.wk-card-main {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  gap: clamp(28px, 4vw, 72px);
-}
-
-/* 小横图：主区右侧，与左侧清单平衡 */
+/* 大横图：右侧错落（align-self 右对齐 + 内缩留白），放大占住中部、压缩留白 */
 .wk-card-cover {
   position: relative;
   flex: none;
-  width: clamp(220px, 31vw, 400px);
-  margin-right: clamp(8px, 3%, 40px);
+  align-self: flex-end;
+  width: clamp(260px, 36vw, 440px);
+  margin-right: clamp(12px, 6%, 80px);
   aspect-ratio: 3 / 2;
   border-radius: 12px;
   overflow: hidden;
@@ -1002,21 +994,9 @@ canvas {
   color: var(--muted);
 }
 
-/* 卡内清单区：主区左列占满剩余宽度；超高时内部不滚动（避免与横移抢滚轮） */
+/* 卡内清单区：超高时内部不滚动（避免与横移抢滚轮），靠字号/留白容纳 */
 .wk-card-body {
-  flex: 1;
-  min-width: 0;
-}
-/* 左列较窄：作品行改为名称在上、数据/标签在下，避免两端排挤出多行换行 */
-.wk-card-main .wk-line-btn {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 9px;
-}
-.wk-card-main .wk-line-meta {
-  max-width: 100%;
-  justify-content: flex-start;
-  text-align: left;
+  flex: none;
 }
 
 
@@ -1567,16 +1547,9 @@ canvas {
     font-size: clamp(28px, 8vw, 36px);
   }
 
-  /* 主区改上下堆叠：配图在上（column-reverse，DOM 里清单在前）、清单在下 */
-  .wk-card-main {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: clamp(20px, 5vw, 32px);
-  }
+  /* 窄屏配图保持原尺寸感，不随桌面端放大 */
   .wk-card-cover {
-    align-self: center;
-    width: min(320px, 78vw);
-    margin-right: 0;
+    width: clamp(160px, 48vw, 260px);
   }
 
   /* 作品行：窄屏下标题与右侧数据(播放量/榜单)改为上下排，标题在上、数据在下 */
