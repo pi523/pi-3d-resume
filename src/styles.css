@@ -945,7 +945,7 @@ canvas {
 .wk-card-cover {
   position: relative;
   flex: none;
-  width: clamp(200px, 26vw, 320px);
+  width: clamp(220px, 31vw, 400px);
   margin-right: clamp(8px, 3%, 40px);
   aspect-ratio: 3 / 2;
   border-radius: 12px;
@@ -1006,6 +1006,17 @@ canvas {
 .wk-card-body {
   flex: 1;
   min-width: 0;
+}
+/* 左列较窄：作品行改为名称在上、数据/标签在下，避免两端排挤出多行换行 */
+.wk-card-main .wk-line-btn {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+.wk-card-main .wk-line-meta {
+  max-width: 100%;
+  justify-content: flex-start;
+  text-align: left;
 }
 
 
