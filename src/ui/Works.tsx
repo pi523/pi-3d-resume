@@ -1,119 +1,60 @@
 import { useEffect, useRef, useState, type Ref } from 'react'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
-import { WORKS, SECTION_COVERS, type WorkListItem, type WorkSection, type WorksLang } from '../data/works'
+import { WORKS, type WorkListItem, type WorksLang } from '../data/works'
+import { SHOWCASE, type ShowcasePage } from '../data/showcase'
+import { navigate } from '../store'
+import KeyedVideo from './KeyedVideo'
 import { getWorkDoc } from '../data/workDocs'
 
 const EASE = [0.22, 1, 0.36, 1]
 
-// 极简清单的一行：作品名靠左、数据(播放量/标签)靠右、发丝线分隔；整行可点开全屏详情
-function WorkLine({ item, onOpen }: { item: WorkListItem; onOpen: (item: WorkListItem) => void }) {
-  const hasMeta = item.meta || (item.tags && item.tags.length)
+// 两扇门：主页 Works 区只放两个入口卡（工作室 / 实验场），点击进入对应子页面（hash 路由）。
+// 卡片里用该页前几件作品的封面叠成一摞，hover 时扇开。
+function DoorCard({
+  page,
+  no,
+  title,
+  tagline,
+  lang,
+}: {
+  page: ShowcasePage
+  no: string
+  title: string
+  tagline: string
+  lang: 'en' | 'zh'
+}) {
+  const covers = page.items.slice(0, 3).map((it) => it.media[0].poster || it.media[0].src)
+  const n = page.items.length
   return (
-    <li className="wk-line">
-      <button className="wk-line-btn" onClick={() => onOpen(item)}>
-        <span className="wk-line-name">{item.name}</span>
-        {hasMeta && (
-          <span className="wk-line-meta">
-            {item.meta && <span className="wk-line-num">{item.meta}</span>}
-            {item.tags &&
-              item.tags.map((t, i) => (
-                <span key={i} className="wk-line-tag">
-                  {t}
-                </span>
-              ))}
+    <button className="wk-door" onClick={() => navigate(page.id)}>
+      <div className="wk-door-head">
+        <span className="wk-door-no">{no}</span>
+        <h3 className="wk-door-title">{title}</h3>
+        <span className="wk-door-tagline">{tagline}</span>
+        <span className="wk-door-count">{lang === 'zh' ? `${n} 件作品` : `${n} ${n === 1 ? 'work' : 'works'}`}</span>
+      </div>
+      <div className="wk-door-stack" aria-hidden="true">
+        {covers.map((src, i) => (
+          <span key={i} className="wk-door-cover" style={{ ['--i' as string]: i }}>
+            <img src={src} alt="" loading="lazy" />
           </span>
-        )}
-      </button>
-    </li>
-  )
-}
-
-// 一张全高板块卡：顶部编号 + 标题，中部右侧大配图，底部作品清单
-function SectionCard({
-  section,
-  data,
-  onOpen,
-}: {
-  section: WorkSection
-  data: WorksLang
-  onOpen: (item: WorkListItem) => void
-}) {
-  const [coverError, setCoverError] = useState(false)
-  const cover = SECTION_COVERS[section.id]
-  return (
-    <div className="wk-card">
-      <div className="wk-card-head">
-        <span className="wk-card-no">{section.no}</span>
-        <h3 className="wk-card-title">{section.title}</h3>
-        <span className="wk-card-tagline">{section.tagline}</span>
-      </div>
-      <div className="wk-card-cover">
-        {cover && !coverError ? (
-          <img src={cover} alt="" onError={() => setCoverError(true)} />
-        ) : (
-          <div className="wk-card-cover-ph" aria-hidden="true">
-            <span className="wk-card-cover-no">{section.no}</span>
-          </div>
-        )}
-      </div>
-      <SectionWorks section={section} data={data} onOpen={onOpen} />
-    </div>
-  )
-}
-
-// 板块内的作品清单（items 扁平 / groups 分组 / awards · footer 底部小字）
-function SectionWorks({
-  section,
-  data,
-  onOpen,
-}: {
-  section: WorkSection
-  data: WorksLang
-  onOpen: (item: WorkListItem) => void
-}) {
-  return (
-    <div className="wk-card-body">
-      {section.items && (
-        <ul className="wk-list">
-          {section.items.map((it, i) => (
-            <WorkLine key={i} item={it} onOpen={onOpen} />
-          ))}
-        </ul>
-      )}
-
-      {section.groups &&
-        section.groups.map((g, gi) => (
-          <div key={gi} className="wk-sub">
-            <div className="wk-sub-head">{g.heading}</div>
-            <ul className="wk-list">
-              {g.items.map((it, i) => (
-                <WorkLine key={i} item={{ name: it }} onOpen={onOpen} />
-              ))}
-            </ul>
-          </div>
         ))}
-
-      {(section.awards || section.footer) && (
-        <div className="wk-foot">
-          {section.awards && (
-            <p className="wk-foot-line">
-              <span className="wk-foot-label">{data.awardsLabel}</span>
-              <span className="wk-foot-val accent">{section.awards.join('  ·  ')}</span>
-            </p>
-          )}
-          {section.footer && <p className="wk-foot-line">{section.footer}</p>}
-        </div>
-      )}
-    </div>
+      </div>
+      <div className="wk-door-foot">
+        <span className="wk-door-enter">
+          {lang === 'zh' ? '进入' : 'Enter'} <span aria-hidden="true">→</span>
+        </span>
+      </div>
+    </button>
   )
 }
 
 // 全屏沉浸详情：渲染该作品的 md（banner + 标题 + markdown 正文 + 外链）；
 // 无 md 时回退到占位 banner + meta/标签简介
-function WorkDetail({
+export function WorkDetail({
   item,
   data,
   lang,
@@ -131,8 +72,8 @@ function WorkDetail({
   // 有 md 详情时展示完整信息；无 md 时详情页只保留标题 + 统一占位文案
   const link = doc ? doc.link || item.link : null
   const tags = doc ? doc.tags || item.tags : null
-  // 副标题不含年份；标签单独做 badge 展示
-  const sub = doc ? [item.meta, doc.role].filter(Boolean).join('  ·  ') : ''
+  // 副标题：md 的精确时间段（缺省回退列表 meta）+ 角色；标签单独做 badge 展示
+  const sub = doc ? [doc.year || item.meta, doc.role].filter(Boolean).join('  ·  ') : ''
 
   return (
     <>
@@ -217,10 +158,7 @@ function WorkDetail({
 
 export default function Works({ lang, innerRef }: { lang: 'en' | 'zh'; innerRef: Ref<HTMLElement> }) {
   const data = WORKS[lang]
-  const sections = data.sections
-  const count = sections.length
-
-  const [active, setActive] = useState<WorkListItem | null>(null) // 当前打开详情的作品 item
+  const count = 2
 
   // 竖滚 pin 转横移：测量整排卡片的实际可横移距离（px），竖滚进度 → 横移
   const galleryRef = useRef<HTMLDivElement>(null)
@@ -251,19 +189,6 @@ export default function Works({ lang, innerRef }: { lang: 'en' | 'zh'; innerRef:
   // 横移到底时「继续下滑」提示渐隐
   const hintOpacity = useTransform(scrollYProgress, [0.85, 1], [1, 0])
 
-  // 详情打开时锁滚动 + ESC 关闭
-  useEffect(() => {
-    if (!active) return
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setActive(null)
-    window.addEventListener('keydown', onKey)
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prev
-    }
-  }, [active])
-
   return (
     <section className="works" lang={lang} ref={innerRef}>
       <div
@@ -275,9 +200,20 @@ export default function Works({ lang, innerRef }: { lang: 'en' | 'zh'; innerRef:
           <span className="wk-gallery-title">{data.title}</span>
 
           <motion.div className="wk-track" ref={trackRef} style={{ x }}>
-            {sections.map((s) => (
-              <SectionCard key={s.id} section={s} data={data} onOpen={setActive} />
-            ))}
+            <DoorCard
+              page={SHOWCASE.studio}
+              no="01"
+              title={lang === 'zh' ? '工作室' : 'Studio'}
+              tagline={lang === 'zh' ? '跑在生产里的 Agent' : 'Agents that run in production'}
+              lang={lang}
+            />
+            <DoorCard
+              page={SHOWCASE.lab}
+              no="02"
+              title={lang === 'zh' ? 'AIGC 实验场' : 'AIGC Lab'}
+              tagline={lang === 'zh' ? '短片、短剧和各种生成实验' : 'Films, series and generation experiments'}
+              lang={lang}
+            />
           </motion.div>
 
           <div className="wk-progress" aria-hidden="true">
@@ -286,20 +222,12 @@ export default function Works({ lang, innerRef }: { lang: 'en' | 'zh'; innerRef:
           <motion.span className="wk-hint" style={{ opacity: hintOpacity }} aria-hidden="true">
             {data.hint}
           </motion.span>
+
+          {/* AI 蓝幕片段：她坐着敲电脑（public/clips/desk.mp4），钉在这一屏右下角；文件不存在不渲染 */}
+          <KeyedVideo src={`${import.meta.env.BASE_URL}clips/desk.mp4`} className="wk-desk-clip" />
         </div>
       </div>
 
-      <AnimatePresence>
-        {active && (
-          <WorkDetail
-            key={active.slug || active.name}
-            item={active}
-            data={data}
-            lang={lang}
-            onClose={() => setActive(null)}
-          />
-        )}
-      </AnimatePresence>
     </section>
   )
 }

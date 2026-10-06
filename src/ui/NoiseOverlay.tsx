@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useStore } from '../store'
 import { Canvas, invalidate, useFrame } from '@react-three/fiber'
 import { DoubleSide, Vector2 } from 'three'
 
 // 全屏胶片噪点蒙层（移植自 speakio 首页）：独立 Canvas + multiply 混合，
 // frameloop="demand" 节流到 ~0.8fps，几乎不占性能。
-const CONFIG = { zIndex: 100, opacity: 0.5, alpha: 1 }
+// 颗粒强度：深色 0.5；浅色底上 multiply 噪点会显脏，减到 0.18（见 useStore theme）
+const CONFIG = { zIndex: 100, opacity: 0.5, opacityLight: 0.18, alpha: 1 }
 const SHADER_VERSION = 'noise-v1'
 const num = (v: number) => v.toFixed(3)
 
@@ -103,6 +105,7 @@ export default function NoiseOverlay() {
   // 仅客户端挂载，避免 SSR 不一致（此项目纯 CSR，仍保持一致写法）
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
+  const theme = useStore((s) => s.theme)
   if (!mounted) return null
 
   return (
@@ -119,7 +122,7 @@ export default function NoiseOverlay() {
       }}
     >
       <Canvas
-        style={{ width: '100%', height: '100%', opacity: CONFIG.opacity, pointerEvents: 'none' }}
+        style={{ width: '100%', height: '100%', opacity: theme === 'light' ? CONFIG.opacityLight : CONFIG.opacity, transition: 'opacity 0.35s', pointerEvents: 'none' }}
         frameloop="demand"
         camera={{ position: [0, 0, 1] }}
         gl={{ alpha: true, antialias: false, powerPreference: 'high-performance' }}

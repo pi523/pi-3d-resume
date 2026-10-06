@@ -4,11 +4,17 @@
 import { useMemo, useRef, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useStore } from '../store'
+
+// 底色随主题：深色 = 站点墨底；浅色 = 米纸底（与 styles.css 的 --bg 一致）。切换时在帧循环里缓动。
+const BACKGROUND_BY_THEME = { dark: '#0a0e16', light: '#f3efe8' } as const
+// 流体颜色：浅色底上原粉被 glow 冲淡，换更深的洋红
+const FLUID_BY_THEME = { dark: '#EC4899', light: '#C81E6E' } as const
 
 // 与 reactbits 用法一致的参数（colors=#EC4899、down、mouse spike 开启）
 const CONFIG = {
   colors: ['#EC4899', '#EC4899', '#EC4899'],
-  background: '#0a0e16', // 流体画布下的站点底色（原 DOM 方案里由 body 提供）
+  background: BACKGROUND_BY_THEME.dark, // 流体画布下的站点底色（原 DOM 方案里由 body 提供）
   speed: 0.5,
   scale: 1,
   turbulence: 1,
@@ -210,8 +216,18 @@ export default function FerrofluidBackground() {
     return () => window.removeEventListener('pointermove', onMove)
   }, [gl])
 
+  // 主题底色目标值；在 useFrame 里向它缓动，避免切换时硬跳
+  const theme = useStore((s) => s.theme)
+  const bgTarget = useMemo(() => new THREE.Color(BACKGROUND_BY_THEME[theme]), [theme])
+  const fluidTarget = useMemo(() => new THREE.Color(FLUID_BY_THEME[theme]), [theme])
+
   useFrame((state, dt) => {
     uniforms.iTime.value = state.clock.elapsedTime
+    const k = 1 - Math.exp(-dt / 0.25)
+    uniforms.uBackground.value.lerp(bgTarget, k)
+    uniforms.uColor0.value.lerp(fluidTarget, k)
+    uniforms.uColor1.value.lerp(fluidTarget, k)
+    uniforms.uColor2.value.lerp(fluidTarget, k)
     const ctx = gl.getContext()
     uniforms.iResolution.value.set(ctx.drawingBufferWidth, ctx.drawingBufferHeight, 1)
     // 与原组件相同的指针缓动（mouseDampening 为时间常数）

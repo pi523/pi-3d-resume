@@ -1,6 +1,7 @@
 ---
 title: 儿童温馨短片
 banner: /works/covers/aigc.jpg
+year: 2026
 role: 自由探索
 tags: [AIGC, Video Generation]
 ---

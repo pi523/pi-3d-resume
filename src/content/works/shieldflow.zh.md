@@ -1,6 +1,7 @@
 ---
 title: ShieldFlow
 banner: /works/shieldflow/banner.jpg
+year: 2025.08 – 2026.01
 role: 独立项目
 tags: [Multi-Agent, Data Analysis, Sandbox]
 ---

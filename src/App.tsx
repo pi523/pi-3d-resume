@@ -7,10 +7,14 @@ import Lanyard from './ui/Lanyard'
 import { makeLanyardImages, type LanyardImages } from './ui/lanyardCard'
 import NoiseOverlay from './ui/NoiseOverlay'
 import Resume, { CONTACT_LINKS } from './ui/Resume'
+import ChapterNav from './ui/ChapterNav'
 import { SOCIAL_ICONS } from './ui/SocialIcons'
 import Works from './ui/Works'
 import LoadingScreen from './ui/LoadingScreen'
-import { useStore } from './store'
+import Finale from './ui/Finale'
+import StickerWall from './ui/StickerWall'
+import CatHotspot from './ui/CatHotspot'
+import { useStore, type Lang } from './store'
 
 function Backdrop() {
   // 点击空白处收起详情
@@ -23,7 +27,6 @@ function Backdrop() {
   )
 }
 
-type Lang = 'en' | 'zh'
 
 // About 文案已移到左侧工牌卡面（lanyardCard.ts），首屏只留底部滚动提示
 function Hero({ lang, cueOpacity }: { lang: Lang; cueOpacity: MotionValue<number> }) {
@@ -51,8 +54,8 @@ function Footer({ lang }: { lang: Lang }) {
               key={l.id}
               className="site-footer-link"
               href={l.href}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={l.href.startsWith('#') ? undefined : '_blank'}
+              rel={l.href.startsWith('#') ? undefined : 'noopener noreferrer'}
               aria-label={l.label}
               title={l.label}
             >
@@ -75,8 +78,35 @@ function LangToggle({ lang, onToggle }: { lang: Lang; onToggle: () => void }) {
   )
 }
 
-export default function App() {
-  const [lang, setLang] = useState<Lang>('zh')
+// 昼夜切换：与语言按钮同款，放其左侧。图标：深色模式下显示太阳（点了变亮），反之月亮
+function ThemeToggle() {
+  const theme = useStore((s) => s.theme)
+  const toggle = useStore((s) => s.toggleTheme)
+  return (
+    <button
+      className="theme-toggle"
+      onClick={toggle}
+      aria-label={theme === 'dark' ? '切换到浅色 / Light mode' : '切换到深色 / Dark mode'}
+      title={theme === 'dark' ? 'Light' : 'Dark'}
+    >
+      {theme === 'dark' ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
+export default function App({ hidden = false }: { hidden?: boolean }) {
+  // 语言在 store 里（子页面共用）；hidden = 子页面覆盖在上面时，停掉 3D 帧循环省 GPU
+  const lang = useStore((s) => s.lang)
+  const toggleLang = useStore((s) => s.toggleLang)
   const { scrollY } = useScroll()
   // 作品区蒙层：以作品区顶部从视口底进入到视口中部的进度，驱动 3D 渐暗 + 模糊
   const worksRef = useRef(null)
@@ -84,10 +114,13 @@ export default function App() {
     target: worksRef,
     offset: ['start end', 'start center'],
   })
+  // 蒙层颜色随主题：深色压暗、浅色提亮（与 --bg 同色系）
+  const theme = useStore((s) => s.theme)
+  const fogRgb = theme === 'light' ? '243, 239, 232' : '8, 11, 18'
   const fogBg = useTransform(
     worksProgress,
     [0, 1],
-    ['rgba(8, 11, 18, 0)', 'rgba(8, 11, 18, 0.41)'] // 压暗减半（原 0.82）
+    [`rgba(${fogRgb}, 0)`, `rgba(${fogRgb}, 0.41)`] // 压暗减半（原 0.82）
   )
   const fogBlur = useTransform(worksProgress, [0, 1], ['blur(0px)', 'blur(10px)'])
   // 滚动渐暗：离开首屏后压暗 3D 场景，保证履历文字可读
@@ -133,11 +166,12 @@ export default function App() {
   return (
     <>
       {/* 加载遮罩：模型全部加载完成前覆盖全屏，完成后淡出 */}
-      <LoadingScreen />
+      {!hidden && <LoadingScreen />}
 
       {/* 固定的 3D 背景（铁磁流体背景在场景内：scene/FerrofluidBackground.tsx） */}
       <div className="scene-bg">
         <Canvas
+          frameloop={hidden ? 'never' : 'always'}
           shadows={{ type: THREE.PCFShadowMap }}
           dpr={[1, 1.5]}
           camera={{ position: [0, 5, 19], fov: 39, near: 0.1, far: 500 }}
@@ -170,7 +204,16 @@ export default function App() {
         aria-hidden="true"
       /> */}
 
-      <LangToggle lang={lang} onToggle={() => setLang((l) => (l === 'en' ? 'zh' : 'en'))} />
+      {!hidden && (
+        <>
+          <LangToggle lang={lang} onToggle={toggleLang} />
+          <ThemeToggle />
+        </>
+      )}
+
+      {/* 章节索引：左下角，离开首屏后淡入（接替 hero-chrome 的角标位置） */}
+      {!hidden && <ChapterNav lang={lang} />}
+      <CatHotspot lang={lang} />
 
       {/* 首屏装饰：发丝内框 + 四角定位标 + 角标元数据（随滚动淡出） */}
       <motion.div className="hero-chrome" style={{ opacity: heroChromeOpacity }} aria-hidden="true">
@@ -193,7 +236,7 @@ export default function App() {
       </motion.div>
 
       {/* 物理工牌挂绳（可拖拽）：全屏画布、卡片停在人物左侧，滚动时淡出 */}
-      {lanyardImages && (
+      {lanyardImages && !hidden && (
         <motion.div
           className={`lanyard-overlay${lanyardOff ? ' is-off' : ''}`}
           style={{ opacity: lanyardOpacity, filter: lanyardBlur }}
@@ -219,6 +262,8 @@ export default function App() {
         <Hero lang={lang} cueOpacity={cueOpacity} />
         <Resume lang={lang} />
         <Works lang={lang} innerRef={worksRef} />
+        <StickerWall lang={lang} />
+        <Finale lang={lang} />
         <Footer lang={lang} />
       </main>
     </>

@@ -1,6 +1,7 @@
 ---
 title: A Warm Short for Kids
 banner: /works/covers/aigc.jpg
+year: 2026
 role: Free Exploration
 tags: [AIGC, Video Generation]
 ---

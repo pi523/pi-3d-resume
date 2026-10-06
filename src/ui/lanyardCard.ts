@@ -19,6 +19,13 @@ const TEXT = {
       "I believe AI's value isn't in the demo — it's in the moment it runs in production and solves a real problem.",
     ],
     cue: 'SCROLL DOWN',
+    // 背面「Now」：最近在做什么（1–3 条短句，随时改这里）
+    nowLabel: 'NOW',
+    now: [
+      'Building agent-driven game production at Lobah Play',
+      'iSolid in closed beta',
+      'MSc AI, NTU — graduating Dec 2026',
+    ],
   },
   zh: {
     title: 'About Enge',
@@ -27,13 +34,19 @@ const TEXT = {
       '相信 AI 的价值不在 demo 里，而在真正跑在生产环境、解决实际问题的那一刻。',
     ],
     cue: '向下滚动',
+    nowLabel: '最近',
+    now: [
+      '在 Lobah Play 搭 Agent 驱动的游戏生产管线',
+      'iSolid 封闭 Beta 进行中',
+      '2026 年 12 月 NTU AI 硕士毕业',
+    ],
   },
 }
 
 // 等 webfont 就绪再画布上绘字；CJK 分包字体需带上实际文本触发按需加载
 async function ensureFonts(lang: Lang) {
   const t = TEXT[lang]
-  const sample = t.title + t.paragraphs.join('') + t.cue + 'Enge Code Art Play'
+  const sample = t.title + t.paragraphs.join('') + t.cue + t.nowLabel + t.now.join('') + 'Enge Code Art Play'
   try {
     await Promise.all([
       document.fonts.load('400 120px Mansalva', 'About Enge'),
@@ -180,9 +193,10 @@ function drawFront(lang: Lang): string {
   return canvas.toDataURL('image/png')
 }
 
-// 卡片背面：签名 + 标语，呼应 hero 角标
-function drawBack(): string {
+// 卡片背面：签名 + 标语（上半）+ Now 近况（下半），呼应 hero 角标
+function drawBack(lang: Lang): string {
   const { canvas, ctx } = makeCanvas(CARD_W, CARD_H)
+  const t = TEXT[lang]
   drawCardBase(ctx)
 
   const cx = CARD_W / 2
@@ -190,15 +204,36 @@ function drawBack(): string {
 
   ctx.fillStyle = INK
   ctx.font = '400 200px Mansalva, cursive'
-  ctx.fillText('Enge', cx, 700)
+  ctx.fillText('Enge', cx, 500)
   ctx.fillStyle = ACCENT
   ctx.beginPath()
-  ctx.arc(cx + 218, 692, 12, 0, Math.PI * 2)
+  ctx.arc(cx + 218, 492, 12, 0, Math.PI * 2)
   ctx.fill()
 
   ctx.fillStyle = 'rgba(244, 241, 234, 0.55)'
   ctx.font = "500 30px 'Helvetica Neue', sans-serif"
-  drawSpaced(ctx, 'CODE · ART · PLAY', cx, 810, 8)
+  drawSpaced(ctx, 'CODE · ART · PLAY', cx, 610, 8)
+
+  // Now 近况：橙色小标 + 短句列表
+  const isZh = lang === 'zh'
+  ctx.fillStyle = ACCENT
+  ctx.font = isZh ? `400 34px ${ZH_FONT}` : "500 28px 'Helvetica Neue', sans-serif"
+  drawSpaced(ctx, t.nowLabel, cx, 790, isZh ? 12 : 9)
+  ctx.fillStyle = ACCENT
+  ctx.fillRect(cx - 24, 814, 48, 3)
+
+  ctx.fillStyle = 'rgba(244, 241, 234, 0.88)'
+  ctx.font = isZh ? `400 42px ${ZH_FONT}` : "600 40px 'Cormorant Upright', serif"
+  const lineHeight = isZh ? 70 : 56
+  const maxWidth = CARD_W - 64 * 2 - 80
+  let y = 890
+  for (const line of t.now) {
+    for (const l of wrapText(ctx, line, maxWidth)) {
+      ctx.fillText(l, cx, y)
+      y += lineHeight
+    }
+    y += 22
+  }
 
   ctx.fillStyle = 'rgba(244, 241, 234, 0.38)'
   ctx.font = "500 24px 'Helvetica Neue', sans-serif"
@@ -239,5 +274,5 @@ export interface LanyardImages {
 
 export async function makeLanyardImages(lang: Lang): Promise<LanyardImages> {
   await ensureFonts(lang)
-  return { front: drawFront(lang), back: drawBack(), band: drawBand() }
+  return { front: drawFront(lang), back: drawBack(lang), band: drawBand() }
 }

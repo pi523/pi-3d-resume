@@ -3,11 +3,12 @@ import { ZooopLogo } from './ZooopLogo'
 import { SOCIAL_ICONS } from './SocialIcons'
 import { FOCUS_POINTS } from '../data/focusPoints'
 
-// 联系方式（时间轴末尾 + 页脚共用）
+// 联系方式（时间轴末尾 + 页脚共用）。cv 进简历页 #/resume（PDF 下载按钮在那页里）
 export const CONTACT_LINKS = [
   { id: 'github', label: 'GitHub', href: 'https://github.com/pi523' },
   { id: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/enge-lou-b77aa3214' },
   { id: 'mail', label: 'Email', href: 'mailto:monicalou0523@gmail.com' },
+  { id: 'cv', label: 'Résumé', href: '#/resume' },
 ]
 
 // 履历数据（双语）。英文为译稿，可按需润色。
@@ -33,17 +34,22 @@ const RESUME: Record<'en' | 'zh', { title: string; entries: ResumeEntry[] }> = {
     title: 'Résumé',
     entries: [
       {
-        period: 'Aug 2025 – Dec 2026',
+        period: '2022 – 2026',
         place: 'Nanyang Technological University, Singapore',
-        role: 'Master of Science in Artificial Intelligence',
+        role: 'MSc Artificial Intelligence (2025–26) · B.Eng. Electrical & Electronic Engineering (2022–25)',
+        points: [
+          'MSc: Multi-Agent Systems · Generative AI · Time Series Analysis · Large Language Models',
+          'B.Eng. First Class Honours, CGPA 4.25 / 5.0 — Data Analysis & Machine Learning track',
+        ],
       },
       {
-        period: 'Jul 2022 – Jun 2025',
-        place: 'B.Eng. Electrical & Electronic Engineering',
-        role: 'Specialization: Data Analysis & Machine Learning (Computing & Intelligent Systems)',
+        period: 'Aug 2026 – Present',
+        place: 'Lobah Play, Singapore',
+        role: 'AI Research Engineer Intern',
         points: [
-          'First Class Honours (AY22/23)',
-          'Machine Learning Design & Application · AI & Data Mining',
+          'Own mobile game titles from spec to delivery, turning business and player needs into shipped games',
+          'Built "Dark Factory", an agent-driven game production pipeline — 4–5 games a week to 4–5 games every 2–3 days',
+          'Now pushing it toward unattended 24/7 operation',
         ],
       },
       {
@@ -51,10 +57,10 @@ const RESUME: Record<'en' | 'zh', { title: string; entries: ResumeEntry[] }> = {
         place: 'Desay SV Automotive, Singapore',
         role: 'LLM Applications Engineer Intern',
         points: [
-          'Multilingual translation plugin on local LLMs + RAG, deployed internally',
-          'Co-authored IEEE-ITSC paper (accepted): runtime safety monitoring for DMS',
-          'PRD–UE–UI automated audit system — 95% detection rate in pilot',
-          'ROS2 robotic-arm integration + scheduled AI news-digest service',
+          'Multilingual (ZH/EN/JA/ES/DE) translation plugin on local LLMs + RAG, deployed internally',
+          'PRD–UX–UI consistency audit with product & design teams — 95% detection in pilot',
+          'Co-authored "Structured Runtime Safe Monitoring for Camera-Based DMS", accepted at IEEE-ITSC 2026',
+          'LLM-driven robotic-arm control prototype (OpenClaw + ROS2 + Gazebo) + scheduled AI news-digest service',
         ],
       },
       {
@@ -83,17 +89,22 @@ const RESUME: Record<'en' | 'zh', { title: string; entries: ResumeEntry[] }> = {
     title: 'Résumé',
     entries: [
       {
-        period: 'Aug 2025 – Dec 2026',
+        period: '2022 – 2026',
         place: '南洋理工大学 · 新加坡',
-        role: '人工智能理学硕士',
+        role: '人工智能理学硕士（2025–26）· 电气与电子工程学士（2022–25）',
+        points: [
+          '硕士：多智能体系统 · 生成式 AI · 时间序列分析 · 大语言模型',
+          '本科一等荣誉，CGPA 4.25 / 5.0 — 数据分析与机器学习方向',
+        ],
       },
       {
-        period: 'Jul 2022 – Jun 2025',
-        place: '电气与电子工程学士',
-        role: '专业方向：数据分析与机器学习（计算与智能系统）',
+        period: 'Aug 2026 – 至今',
+        place: 'Lobah Play · 新加坡',
+        role: 'AI Research Engineer 实习生',
         points: [
-          '一等荣誉学位（AY22/23）',
-          '机器学习设计与应用 · 人工智能与数据挖掘',
+          '把业务与玩家需求转成手游交付物，每款游戏从需求到上线全程负责',
+          '搭建 Agent 驱动的游戏生产管线「Dark Factory」：产能从每周 4–5 款提到每 2–3 天 4–5 款',
+          '正在推进它走向 24/7 无人值守运行',
         ],
       },
       {
@@ -101,10 +112,10 @@ const RESUME: Record<'en' | 'zh', { title: string; entries: ResumeEntry[] }> = {
         place: '德赛西威 · 新加坡',
         role: 'LLM 应用工程实习生',
         points: [
-          '本地 LLM + RAG 多语言翻译插件，已部署内部使用',
-          'IEEE-ITSC 论文合著（已录用）：驾驶员监测系统运行时安全监控',
-          'PRD–UE–UI 自动审查系统，试点检测率 95%',
-          'ROS2 机械臂集成 + 定时 AI 资讯摘要服务',
+          '本地 LLM + RAG 多语言（中英日西德）翻译插件，已部署内部使用',
+          '与产品、设计部门共建 PRD–UX–UI 一致性审查系统，试点检测率 95%',
+          'IEEE-ITSC 2026 论文合著（已录用）：相机式驾驶员监测系统的结构化运行时安全监控',
+          'LLM 驱动的机械臂控制原型（OpenClaw + ROS2 + Gazebo）+ 定时 AI 资讯摘要服务',
         ],
       },
       {

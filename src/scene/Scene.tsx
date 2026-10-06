@@ -1,4 +1,5 @@
 import { Suspense, useMemo, useRef, useEffect, type MutableRefObject } from 'react'
+import { useStore } from '../store'
 import { useThree, useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { EffectComposer, Bloom, DepthOfField, SMAA } from '@react-three/postprocessing'
@@ -8,6 +9,7 @@ import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js'
 import Env from './Env'
 import FerrofluidBackground from './FerrofluidBackground'
 import { FOCUS_POINTS, FRAMES_PER_NODE } from '../data/focusPoints'
+import { catTrack } from './catTrack'
 import { STICKERS } from '../data/stickers'
 
 useGLTF.preload(`${import.meta.env.BASE_URL}models/me.glb`)
@@ -166,7 +168,7 @@ function Man2({
   const { scene, animations } = useGLTF(`${import.meta.env.BASE_URL}models/me.glb`)
 
   // 克隆模型；收集眼睛对象、聚焦锚点对象、glb 自带相机、各锚点景深开关
-  const { model, eyes, followGroup, petUniforms, points, startPoint, glbCam, focusNode, dof } = useMemo(() => {
+  const { model, eyes, followGroup, petUniforms, points, startPoint, glbCam, focusNode, dof, manNode } = useMemo(() => {
     // SkeletonUtils.clone：普通 clone 不会重绑蒙皮骨骼（skinned mesh 会继续引用原骨架）
     const clone = cloneWithSkeleton(scene) as any
     clone.traverse((o: any) => {
@@ -377,6 +379,7 @@ function Man2({
       eyes,
       followGroup,
       petUniforms,
+      manNode,
       points: pts,
       startPoint: start,
       glbCam,
@@ -455,6 +458,7 @@ function Man2({
 
   const followEuler = useRef(new THREE.Euler(0, 0, 0, 'YXZ'))
   const petTime = useRef(0)
+  const catVec = useRef(new THREE.Vector3())
 
   const tmpEuler = useRef(new THREE.Euler(0, 0, 0, 'YXZ'))
   const tmpQuat = useRef(new THREE.Quaternion())
@@ -639,6 +643,20 @@ function Man2({
       petUniforms.uPetPhase.value = frame * PET.scrollSpeed + petTime.current * PET.idleSpeed
     }
 
+    // 3b3) 猫的屏幕投影（供 DOM 热区"摸猫"用）：PET.center 是手搭在猫身上的点，当猫的锚点
+    if (manNode) {
+      catVec.current.set(PET.center[0], PET.center[1], PET.center[2])
+      manNode.localToWorld(catVec.current)
+      const dist = camera.position.distanceTo(catVec.current)
+      catVec.current.project(camera)
+      const { width, height } = get().size
+      const v = catVec.current
+      catTrack.on = v.z < 1 && v.x > -1 && v.x < 1 && v.y > -1 && v.y < 1
+      catTrack.x = ((v.x + 1) / 2) * width
+      catTrack.y = ((1 - v.y) / 2) * height
+      catTrack.scale = THREE.MathUtils.clamp(14 / Math.max(dist, 1), 0.6, 2.2)
+    }
+
     // 3c) 人物转头跟随鼠标：对独立包裹组设置绝对小角度（眼球非独立网格时的替代方案）。
     if (followGroup && !isMobile.current) {
       const follow = { yaw: 7, pitch: 4 }
@@ -707,9 +725,12 @@ function Post2({
   dofBokehRef: MutableRefObject<number>
   dofRangeRef: MutableRefObject<number>
 }) {
+  // 浅色主题：米纸底亮度 ≈0.94 高于 0.82 阈值，整张背景都会被 Bloom 晕开、人物发灰——
+  // 阈值抬到只剩高光，强度减半。
+  const theme = useStore((s) => s.theme)
   const post = {
-    bloomIntensity: 0.6,
-    bloomThreshold: 0.82,
+    bloomIntensity: theme === 'light' ? 0.3 : 0.6,
+    bloomThreshold: theme === 'light' ? 0.99 : 0.82,
     dof: true,
     startBokeh: 7.4,
     startRange: 2.0,

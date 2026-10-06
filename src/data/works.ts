@@ -72,8 +72,8 @@ export const WORKS: Record<'zh' | 'en', WorksLang> = {
         items: [
           {
             name: 'iSolid',
-            meta: '网页应用 · AI 督促者',
-            link: 'https://isolid.p1pi.me',
+            meta: '2026 · 网页应用 · AI 督促者',
+            tags: ['LangGraph', 'Claude / GPT', 'Docker'],
             slug: 'isolid',
           },
         ],
@@ -86,33 +86,50 @@ export const WORKS: Record<'zh' | 'en', WorksLang> = {
         items: [
           {
             name: '自主交易 Agent 系统',
-            meta: '独立项目 · 链上自动化',
+            meta: '2026 · 独立项目 · 链上自动化',
+            tags: ['Polygon', '异步守护进程', '风控'],
             slug: 'chain-agent',
           },
         ],
       },
       {
-        id: 'shieldflow',
+        id: 'cs-ops',
         no: '03',
+        title: 'AI 客服运营平台',
+        tagline: 'Forward Deployed——把一家企业的运营方法论做成跑在生产里的 AI 工作流',
+        items: [
+          {
+            name: 'AI 客服运营平台',
+            meta: '2026 · 项目制合作 · 远程',
+            tags: ['Agent Workflow', '系统集成', '生产交付'],
+            slug: 'cs-ops',
+          },
+        ],
+      },
+      {
+        id: 'shieldflow',
+        no: '04',
         title: 'ShieldFlow',
         tagline: '多智能体数据分析引擎',
         items: [
           {
             name: 'ShieldFlow',
-            meta: 'Multi-Agent · 数据分析',
+            meta: '2025 · Multi-Agent · 数据分析',
+            tags: ['Docker 沙箱', 'Schema RAG', 'Plotly'],
             slug: 'shieldflow',
           },
         ],
       },
       {
         id: 'aigc',
-        no: '04',
+        no: '05',
         title: 'AIGC 实验场',
-        tagline: '自由探索——用 AI 生成温馨小片,也用 AI 快速做游戏',
+        tagline: '自由探索——用 AI 做给孩子看的温馨小片',
         items: [
           {
             name: '儿童温馨短片',
-            meta: 'AIGC · 视频生成',
+            meta: '2026 · AIGC · 视频生成',
+            tags: ['分镜', '角色一致性'],
             slug: 'aigc-film',
           },
         ],
@@ -139,8 +156,8 @@ export const WORKS: Record<'zh' | 'en', WorksLang> = {
         items: [
           {
             name: 'iSolid',
-            meta: 'Web app · AI accountability',
-            link: 'https://isolid.p1pi.me',
+            meta: '2026 · Web app · AI accountability',
+            tags: ['LangGraph', 'Claude / GPT', 'Docker'],
             slug: 'isolid',
           },
         ],
@@ -153,33 +170,50 @@ export const WORKS: Record<'zh' | 'en', WorksLang> = {
         items: [
           {
             name: 'Autonomous Trading Agent System',
-            meta: 'Independent project · On-chain automation',
+            meta: '2026 · Independent project · On-chain automation',
+            tags: ['Polygon', 'Async daemons', 'Risk guards'],
             slug: 'chain-agent',
           },
         ],
       },
       {
-        id: 'shieldflow',
+        id: 'cs-ops',
         no: '03',
+        title: 'AI Customer-Ops Platform',
+        tagline: "Forward deployed — turning a company's operating playbook into AI workflows running in production",
+        items: [
+          {
+            name: 'AI Customer-Ops Platform',
+            meta: '2026 · Project-based · Remote',
+            tags: ['Agent workflows', 'Systems integration', 'Production handover'],
+            slug: 'cs-ops',
+          },
+        ],
+      },
+      {
+        id: 'shieldflow',
+        no: '04',
         title: 'ShieldFlow',
         tagline: 'Multi-Agent Data Analysis Engine',
         items: [
           {
             name: 'ShieldFlow',
-            meta: 'Multi-agent · Data analysis',
+            meta: '2025 · Multi-agent · Data analysis',
+            tags: ['Docker sandbox', 'Schema RAG', 'Plotly'],
             slug: 'shieldflow',
           },
         ],
       },
       {
         id: 'aigc',
-        no: '04',
+        no: '05',
         title: 'AIGC Playground',
-        tagline: 'Free exploration — warm little films and fast-built games, made with AI',
+        tagline: 'Free exploration — warm little films for kids, made with AI',
         items: [
           {
             name: 'A Warm Short for Kids',
-            meta: 'AIGC · Video generation',
+            meta: '2026 · AIGC · Video generation',
+            tags: ['Storyboard', 'Character consistency'],
             slug: 'aigc-film',
           },
         ],
@@ -193,6 +227,7 @@ export const WORKS: Record<'zh' | 'en', WorksLang> = {
 export const SECTION_COVERS: Record<string, string> = {
   isolid: `${import.meta.env.BASE_URL}works/covers/isolid.jpg`,
   'chain-agent': `${import.meta.env.BASE_URL}works/covers/chain-agent.jpg`,
+  'cs-ops': `${import.meta.env.BASE_URL}works/covers/cs-ops.jpg`,
   shieldflow: `${import.meta.env.BASE_URL}works/covers/shieldflow.jpg`,
   aigc: `${import.meta.env.BASE_URL}works/covers/aigc.jpg`,
 }
