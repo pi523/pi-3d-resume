@@ -12,8 +12,9 @@ import { SOCIAL_ICONS } from './ui/SocialIcons'
 import Works from './ui/Works'
 import LoadingScreen from './ui/LoadingScreen'
 import Finale from './ui/Finale'
-import StickerWall from './ui/StickerWall'
-import CatHotspot from './ui/CatHotspot'
+// 访客互动（摸猫计数 / 贴纸留言墙）2026-11-13 搁置：组件保留在 ui/ 下，启用时恢复下面两行 import 与挂载
+// import StickerWall from './ui/StickerWall'
+// import CatHotspot from './ui/CatHotspot'
 import { useStore, type Lang } from './store'
 
 function Backdrop() {
@@ -213,7 +214,7 @@ export default function App({ hidden = false }: { hidden?: boolean }) {
 
       {/* 章节索引：左下角，离开首屏后淡入（接替 hero-chrome 的角标位置） */}
       {!hidden && <ChapterNav lang={lang} />}
-      <CatHotspot lang={lang} />
+      {/* <CatHotspot lang={lang} /> */}
 
       {/* 首屏装饰：发丝内框 + 四角定位标 + 角标元数据（随滚动淡出） */}
       <motion.div className="hero-chrome" style={{ opacity: heroChromeOpacity }} aria-hidden="true">
@@ -262,7 +263,7 @@ export default function App({ hidden = false }: { hidden?: boolean }) {
         <Hero lang={lang} cueOpacity={cueOpacity} />
         <Resume lang={lang} />
         <Works lang={lang} innerRef={worksRef} />
-        <StickerWall lang={lang} />
+        {/* <StickerWall lang={lang} /> */}
         <Finale lang={lang} />
         <Footer lang={lang} />
       </main>

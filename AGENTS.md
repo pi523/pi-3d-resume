@@ -52,7 +52,7 @@ cd tools && npm install                   # 资产脚本依赖（gltf-transform�
 - `data/stickers.ts` 贴纸配置（img/p/n/size/roll）；`data/showcase.ts` 工作室/实验场内容（items/media，多段 media = 剧集 EP 切换）；`data/resume.ts` 简历页双语数据（metric/place/stack，与 `public/LouEnge_CV.pdf` 同源）。
 - `content/works/<slug>.zh.md` / `<slug>.en.md`：作品详情，`getWorkDoc(slug, lang)` 取用，无分语言版回退 `<slug>.md`。frontmatter 有 `banner:` `year:`。
 - `ui/`：`Resume.tsx`（主页履历 + 页脚 `CONTACT_LINKS`）、`Lanyard.tsx` + `lanyardCard.ts`（React Bits 工牌，卡面由 canvas 运行时生成，双语，切语言 `key={lang}` 重挂）、`Showcase.tsx`、`ResumePage.tsx`（登机牌/票据样式简历，点击"撕开"）、`SubTop.tsx`（子页共用顶栏）、`ChapterNav.tsx`（左下磨砂章节索引）、`LangToggle` / `.theme-toggle`、`FerrofluidBackground`（铁磁流体背景，按主题缓动颜色）、`NoiseOverlay`、`DoorCard`（Works 区两扇门：工作室 / 实验场）、`Finale.tsx`、`KeyedVideo.tsx`（WebGL 蓝幕抠像 #0000FF，视频 404 时不渲染；`public/clips/` 目前没有视频）。
-- 搁置的访客互动前端：`lib/api.ts`（`VITE_API_BASE` 为空则所有功能静默关闭，当前就是关闭态）、`ui/CatHotspot.tsx`、`ui/StickerWall.tsx`、`ui/AdminPage.tsx`、`scene/catTrack.ts`。
+- 搁置的访客互动前端：`ui/CatHotspot.tsx`、`ui/StickerWall.tsx` **已从 App.tsx 取消挂载**（import 与 JSX 注释掉了，启用时恢复两行即可）；`lib/api.ts`（`VITE_API_BASE` 为空则接口调用静默关闭）、`ui/AdminPage.tsx`（`#/admin` 路由仍在，但无后端时只显示未配置）、`scene/catTrack.ts`。
 - `styles.css`：颜色全部走 CSS 令牌 `--ink-rgb / --bg-rgb / --accent(-rgb) / --panel-rgb`，`:root[data-theme='light']` 覆盖（浅色 accent #c2561e、底 #f3efe8）。浅色下 `.scrim` / `.glass-rail` 只罩文字列。
 
 ## 用户已定的设计决策（不要反着改）
