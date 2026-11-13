@@ -1,0 +1,22 @@
+# Cloudflare Worker：个人站的小后端（摸猫计数 + 贴纸留言墙 + 审核）
+# 首次部署：
+#   npx wrangler login
+#   npx wrangler d1 create enge-site        → 把输出的 database_id 填到下面
+#   npm run db:init                          → 建表
+#   npx wrangler secret put ADMIN_TOKEN      → 审核页用的口令（随便一串长随机字符串）
+#   npm run deploy                           → 得到 https://enge-site-api.<you>.workers.dev
+# 然后在 web/.env.production 写 VITE_API_BASE=https://enge-site-api.<you>.workers.dev
+name = "enge-site-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "enge-site"
+database_id = "REPLACE_WITH_YOUR_D1_ID"
+
+[vars]
+# 允许跨域的前端来源（逗号分隔）。本地开发 + GitHub Pages 域名；换域名记得改
+ALLOWED_ORIGINS = "http://localhost:5175,https://pi523.github.io"
+PET_DAILY_CAP_PER_IP = "300"
+WALL_DAILY_CAP_PER_IP = "5"

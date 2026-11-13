@@ -1,4 +1,13 @@
-node_modules
-dist
+# 依赖与构建产物
+node_modules/
+dist/
 *.tsbuildinfo
 .DS_Store
+.env.local
+.env.*.local
+.wrangler/
+
+# 原始大素材（走 U 盘 / 网盘，不进 git；已上线的压缩版在 web/public/ 里）
+/*.glb
+/*.mp4
+/picture/

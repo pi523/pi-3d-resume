@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Assemble a gh-pages branch via the GitHub API, reusing blobs already on main."""
-import base64, hashlib, json, os, subprocess, sys, time, urllib.request
+import base64, hashlib, json, os, shutil, subprocess, sys, time, urllib.request
 
 REPO = "pi523/pi-3d-resume"
 API = "https://api.github.com"
-TOKEN = subprocess.check_output([os.path.expanduser("~/.local/gh/bin/gh"), "auth", "token"]).decode().strip()
-DIST = "/Users/sbsai/Desktop/im/pi-3d-resume/web/dist"
+# gh CLI：优先用 PATH 里的，找不到再退回旧机器的安装位置
+GH = shutil.which("gh") or os.path.expanduser("~/.local/gh/bin/gh")
+TOKEN = subprocess.check_output([GH, "auth", "token"]).decode().strip()
+# dist 相对脚本位置解析（web/scripts/ -> web/dist），不依赖电脑上的绝对路径
+DIST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist")
 
 def req(method, path, body=None, retries=10):
     for attempt in range(retries):
@@ -31,7 +34,7 @@ def upload_blob(payload: dict, retries=10):
     try:
         for attempt in range(retries):
             p = subprocess.run(
-                [os.path.expanduser("~/.local/gh/bin/gh"), "api",
+                [GH, "api",
                  f"repos/{REPO}/git/blobs", "--input", tmp, "--jq", ".sha"],
                 capture_output=True, text=True)
             if p.returncode == 0:
@@ -58,7 +61,7 @@ def branch_blobs(branch):
     except Exception:
         return {}
 
-existing = branch_blobs("main")  # 路径本就是 public/...
+existing = branch_blobs("main")  # 仓库根在 pi-3d-resume/，前端资源在 web/public/...
 existing.update(branch_blobs("gh-pages"))
 print(f"{len(existing)} reusable blobs on remote", flush=True)
 
@@ -70,8 +73,9 @@ for root, _, files in os.walk(DIST):
         rel = os.path.relpath(full, DIST)
         data = open(full, "rb").read()
         sha = git_blob_sha(data)
-        # dist copies of public assets exist on main as "public/<rel>"
-        if existing.get("public/" + rel) == sha or existing.get(rel) == sha:
+        # dist copies of public assets exist on main as "web/public/<rel>"
+        # (旧布局是 "public/<rel>"，一并兼容)；没变的构建产物在上一版 gh-pages 的 "<rel>"
+        if sha in (existing.get("web/public/" + rel), existing.get("public/" + rel), existing.get(rel)):
             reused += 1
         else:
             print(f"uploading {rel} ({len(data)//1024} KB)", flush=True)

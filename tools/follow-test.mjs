@@ -1,0 +1,12 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch()
+const page = await browser.newPage({ viewport: { width: 1280, height: 800 } })
+await page.goto('http://localhost:5175/')
+await page.waitForTimeout(9000)
+await page.mouse.move(100, 400)
+await page.waitForTimeout(1500)
+await page.screenshot({ path: process.env.OUT + '/follow-left.png' })
+await page.mouse.move(1180, 400)
+await page.waitForTimeout(1500)
+await page.screenshot({ path: process.env.OUT + '/follow-right.png' })
+await browser.close()
