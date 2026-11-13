@@ -23,6 +23,8 @@ cd pi-3d-resume/web && npm install && npm run dev     # http://localhost:5175
 这些只在换头像、重做贴纸、重做短片时用到，平时开发不需要。
 
 ## 4. 部署
+**注意**：线上目前还是 2026-10-06 的版本，带着摸猫热区和"留言墙上线中"板块。源码里已经去掉了，
+但 2026-11-13 决定暂不重新部署。新电脑上第一次跑下面的命令，这个改动就会一起上线。
 ```bash
 cd web && npm run build && python3 scripts/deploy_pages.py
 ```
